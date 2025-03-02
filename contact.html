@@ -1,0 +1,104 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+</head>
+<style>
+    body{
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f4;
+    }
+
+    header{
+        background-color: teal;
+        color: mintcream;
+        font-size: 2.5rem;
+        width: 100%;
+        margin-bottom: 20px;
+        text-align: center;
+        cursor: default;
+    }
+
+    .container{
+        background-color: mintcream;
+        padding: 50px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, .1);
+        max-width: 600px;
+        margin: auto;
+        text-align: left;
+    }
+
+    .container h1{
+        text-align: center;
+        color: teal;
+        cursor: default;
+    }
+
+    input, textarea{
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    button{
+        display: inline;
+        background-color: teal;
+        color: mintcream;
+        padding: 10px;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+    button:hover{
+        background-color: rgb(0, 185, 185);
+    }
+    
+
+</style>
+<body>
+    <header>
+        <h1>
+            Expense Tracker
+        </h1>
+    </header>
+    
+    <main>
+    <div class="container">
+        <h1>Contact Us</h1>
+        <form onsubmit="sendEmail(event)">
+            <label for="name">Enter your name</label>
+            <input type="text" id="name" placeholder="Your Name" required>
+            <label for="email">Enter your Email</label>
+            <input type="email" id="email" placeholder="Your Email" required>
+            <label for="message">Enter message</label>
+            <input id="message" placeholder="Your message" rows = "5" required>
+            <button type="submit" >Send message</button>
+            <button type="button"  onclick="window.location.href='home.html'">Back</button>
+        </form>
+        
+    </div>
+</main>
+    <script>
+        function sendEmail(event){
+            event.preventDefault();
+            let name = document.getElementById("name").value;
+            let email = document.getElementById("email").value;
+            let message = document.getElementById("message").value;
+
+            if(!email){
+                alert("Please enter your email address.");
+                return;
+            }
+            let subject = 'Contact Request from ${name}';
+            let body = 'Name: ${name}%0D%)AEmail:${email}%0D%0A%0D%0A${message}';
+            window.location.href='mailto:yourEmail@xample.com?subject=${subject}&body=${body}';
+        }
+    </script>
+</body>
+</html>

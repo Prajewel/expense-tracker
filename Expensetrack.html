@@ -1,0 +1,295 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Track</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<style>
+    body{
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f4f9;
+    }
+    header{
+        background-color: teal;
+        color: mintcream;
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-align: center;
+        cursor: default;
+    }
+    h1 a{
+        margin: 10px 0;
+    }
+    main{
+        padding: 20px;
+    }
+    .add-expense{
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: 800px;
+        text-align: left;
+    }
+    .add-expense h2{
+        text-align: center;
+        cursor: default;
+    }
+
+    .expense-list{
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: 800px;
+        text-align: left;
+        cursor: default;
+    }
+    label{
+        font-weight: bold;
+    }
+    input, select, button{
+        padding: 10px;
+        border: 1px solid #ccc;
+        margin: 10px;
+        border-radius: 5px;
+        font-size: 1em;
+    }
+    button{
+        background-color: teal;
+        color: white;
+        border: none;
+        cursor: pointer;
+    }
+    button:hover{
+        background-color: rgb(0, 185, 185);
+    }
+    table{
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th,td{
+        padding: 10px;
+        border: 1px solid #ddd;
+        text-align: left;
+    }
+    th{
+        background-color: teal;
+        color: white;
+    }
+    .action button{
+        padding: 5px 10px;
+        margin: 0 5px;
+        font-size: 0.9em;
+    }
+    #totalExpenses{
+        font-size: 1.2em;
+        font-weight: bold;
+        margin-top: 20px;
+    }
+    a{
+        align-items: left;
+    }
+    footer{
+        background-color: teal;
+        color: mintcream;
+        margin-top: 20px;
+        padding-top: 25px;
+        padding-bottom: 25px;
+        position: relative;
+        bottom: 0;
+        width: 100%;
+    }
+
+    footer nav a{
+        display: block;
+        margin: 15px;
+        text-align: left;
+        color: mintcream;
+        cursor: pointer;
+        text-decoration: none;
+    }
+</style>
+<body>
+    <header>
+        <h1>Expense Tracker</h1>
+    </header>
+    
+    <main>
+        <section class="add-expense">
+            <h2>Add New Expense</h2>
+            <form id="expenseForm">
+                <label for="amount">Amount: </label>
+                <input type="number" id="amount" placeholder="Enter amount" required><br>
+                <label for="category">Category: </label>
+                <select id="category" required>
+                    <option value="food">Food</option>
+                    <option value="transport">Transport</option>
+                    <option value="entertainment">Entertainment</option>
+                    <option value="utilities">Utilities</option>
+                    <option value="other">Other</option>
+                </select><br>
+                <label for="date">Date: </label>
+                <input type="date" id="date" required><br>
+                <label for="description">Description: </label>
+                <input type="text" id="description" placeholder="Enter description"><br><br>
+                <button type="submit">Add Expense</button><br>
+            </form>
+        </section>
+
+        <section class="expense-list">
+            <div id="expenseTable">
+            <h2>Your Expenses</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </div>
+                        <th class="action-column">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="expense-body">
+
+                </tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="3">Total Expenses: </td>
+                        <td id="total-amount">0</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+            <br></br>
+        </div>
+            <div class="download-options">
+                <button onclick="downloadAsPDF()">Download as PDF</button>
+                <button onclick="downloadAsImage()">Download as Image</button>
+            </div>
+        </section>
+        </main>
+        <footer>
+            <nav>
+                <a href="home.html">&RightArrow;Home</a>
+                <a href="contact.html">&RightArrow; Contact us</a>
+            </nav>
+        </footer>
+
+    <script>
+        document.getElementById("expenseForm").addEventListener("submit",function(event){
+            event.preventDefault();
+        
+            let date = document.getElementById("date").value;
+            let category = document.getElementById("category").value;
+            let amount = document.getElementById("amount").value;
+            let description = document.getElementById("description").value;
+             
+            if (!date || !category || !description || !amount) return;
+        
+            amount = parseFloat(amount).toFixed(2);
+        
+            if (isNaN(amount)) return;
+        
+            let tableBody = document.getElementById("expense-body");
+            let newRow = tableBody.insertRow();
+
+            let cellDate = newRow.insertCell(0);
+            let cellCategory = newRow.insertCell(1);
+            let cellDescription = newRow.insertCell(2);
+            let cellAmount = newRow.insertCell(3);
+            let cellAction = newRow.insertCell(4);
+
+            cellDate.textContent = date;
+            cellCategory.textContent = category;
+            cellDescription.textContent = description;
+            cellAmount.textContent = amount;
+            cellAmount.classList.add("expense-amount");
+
+
+            let editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.classList.add("edit-btn");
+            editButton.onclick = function(){
+                editExpense(newRow);
+            };
+
+            let deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.classList.add("de;ete-btn");
+            deleteButton.onclick = function(){
+                deleteExpense(newRow);
+            };
+
+            cellAction.appendChild(editButton);
+            cellAction.appendChild(deleteButton);
+
+            updateTotal();
+        
+            document.getElementById("expenseForm").reset();
+        });
+    
+        function deleteExpense(row){
+            row.remove();
+            updateTotal();
+        }
+    
+        function editExpense(row){
+            let cells = row.getElementsByTagName("td");
+            let date = prompt("Edit Date: ",cells[0].innerText);
+            let category = prompt("Edit Category: ",cells[1].innerText);
+            let description = prompt("Edit Description: ",cells[2].innerText);
+            let amount = prompt("Edit Amount: ",cells[3].innerText);
+        
+            if (date) cells[0].innerText = date;
+            if (category) cells[1].innerText = category;
+            if (description) cells[2].innerText =description;
+            if (amount && !isNaN(parseFloat(amount))) {
+                cells[3].textContent = parseFloat(amount).toFixed(2);
+                updateTotal();
+            }
+        }
+    
+        function updateTotal(){
+            let total = 0;
+            document.querySelectorAll(".expense-amount").forEach(cell => {
+                total += parseFloat(cell.innerText) || 0;
+            });
+        
+            document.getElementById("total-amount").innerText = total.toFixed(2);
+        }
+
+        function downloadAsImage(){
+            let tableContainer = document.getElementById("expenseTable");
+            html2canvas(tableContainer).then(canvas => {
+                let link = document.createElement("a");
+                link.href = canvas.toDataURL("image/png");
+                link.download = "expense_table.png";
+                link.click();
+            });
+        }
+
+        function downloadAsPDF(){
+            window.jsPDF = window.jspdf.jsPDF;
+            let doc = new jsPDF();
+
+            html2canvas(document.getElementById("expenseTable")).then(canvas => {
+                let imgData = canvas.toDataURL("image/png");
+                let imgWidth = 190;
+                let imgHeight = (canvas.height*imgWidth) / canvas.width;
+                
+                doc.addImage(imgData,"PNG",10,10,imgWidth,imgHeight);
+                doc.save("expense_table.pdf");
+            });
+        }
+    </script>
+</body>
+</html>
