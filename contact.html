@@ -2,6 +2,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
     <title>Contact Us</title>
 </head>
 <style>
@@ -36,6 +40,10 @@
         text-align: center;
         color: teal;
         cursor: default;
+    }
+
+    main{
+        padding: 20px;
     }
 
     input, textarea{
@@ -97,7 +105,7 @@
             }
             let subject = 'Contact Request from ${name}';
             let body = 'Name: ${name}%0D%)AEmail:${email}%0D%0A%0D%0A${message}';
-            window.location.href='mailto:yourEmail@xample.com?subject=${subject}&body=${body}';
+            window.location.href='mailto:araj83098@gmail.com?subject=${subject}&body=${body}';
         }
     </script>
 </body>
