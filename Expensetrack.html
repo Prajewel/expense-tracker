@@ -22,14 +22,13 @@
         background-color: teal;
         color: mintcream;
         font-size: 2.5rem;
-        margin-bottom: 10px;
         text-align: center;
         cursor: default;
     }
-    h1 a {
-        margin: 10px 0;
+    h1{
+        margin: 0;
     }
-    main {
+    main{
         padding: 20px;
     }
     .add-expense {
@@ -114,8 +113,8 @@
     }
 
     .expense-list {
-        overflow-x: auto; /* Ensure the container takes full width */
-        margin: 0 auto; /* Center the container */
+        overflow-x: auto; 
+        margin: 0 auto; 
         padding: 20px;
     }
 
@@ -220,10 +219,6 @@
             let description = document.getElementById("description").value;
             let type = document.getElementById("type").value;
 
-            if (!type || !date || !amount) {
-                console.error("One or more input fields are missing!");
-                return;
-            }
 
             if (isNaN(amount)) return;
 
