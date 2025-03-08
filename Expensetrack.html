@@ -22,13 +22,14 @@
         background-color: teal;
         color: mintcream;
         font-size: 2.5rem;
+        margin: 0; 
         text-align: center;
         cursor: default;
     }
     h1{
         margin: 0;
     }
-    main{
+    main {
         padding: 20px;
     }
     .add-expense {
@@ -53,6 +54,7 @@
         max-width: 800px;
         text-align: left;
         cursor: default;
+        overflow: auto;
     }
     label {
         font-weight: bold;
@@ -77,7 +79,6 @@
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
-        padding: 20px ;
     }
     th, td {
         padding: 10px;
@@ -98,8 +99,25 @@
         font-weight: bold;
         margin-top: 20px;
     }
-    a {
-        align-items: left;
+    .suggestions {
+        background-color: rgba(0, 128, 128, 0.171);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin: 20px auto;
+        max-width: 800px;
+        text-align: left;
+        cursor: default;
+    }
+
+    .suggestions h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #suggestions {
+        font-size: 1.1em;
+        line-height: 1.6;
     }
     footer {
         background-color: teal;
@@ -111,13 +129,6 @@
         bottom: 0;
         width: 100%;
     }
-
-    .expense-list {
-        overflow-x: auto; 
-        margin: 0 auto; 
-        padding: 20px;
-    }
-
     footer nav a {
         display: block;
         margin: 15px;
@@ -126,6 +137,7 @@
         cursor: pointer;
         text-decoration: none;
     }
+
 </style>
 <body>
     <header>
@@ -134,27 +146,31 @@
     
     <main>
         <section class="add-expense">
-            <h2>Add New Expense</h2>
+            <h2>Add New Entry</h2>
             <form id="expenseForm">
-                <label for="amount">Amount: </label>
-                <input type="number" id="amount" placeholder="Enter amount" required><br>
-                <label for="category">Category: </label>
-                <select id="category" required>
-                    <option value="food">Food</option>
-                    <option value="transport">Transport</option>
-                    <option value="entertainment">Entertainment</option>
-                    <option value="utilities">Utilities</option>
-                    <option value="other">Other</option>
-                </select><br>
-                <label for="date">Date: </label>
-                <input type="date" id="date" required><br>
-                <label for="description">Description: </label>
-                <input type="text" id="description" placeholder="Enter description"><br><br>
+                <label for="type" required>Select type:</label>
                 <select id="type" onchange="toggleFields()">
                     <option value="">Select Type</option>
                     <option value="income">Income</option>
                     <option value="expense">Expense</option>
-                </select>
+                </select><br>
+                <label for="amount">Amount: </label>
+                <input type="number" id="amount" placeholder="Enter amount" required><br>
+                <label for="date">Date: </label>
+                <input type="date" id="date" required><br>
+                
+                <div id="expenseFields">
+                    <label for="category">Category: </label>
+                    <select id="category">
+                        <option value="food">Food</option>
+                        <option value="transport">Transport</option>
+                        <option value="entertainment">Entertainment</option>
+                        <option value="utilities">Utilities</option>
+                        <option value="other">Other</option>
+                    </select><br>
+                    <label for="description">Description: </label>
+                    <input type="text" id="description" placeholder="Enter description"><br><br>
+                </div>
                 <button type="submit">Add Entry</button><br>
             </form>
         </section>
@@ -192,7 +208,14 @@
                     </tr>
                 </tfoot>
             </table>
-            <br></br>
+            <br>
+            <section class="suggestions">
+                <h2>Suggestions</h2>
+                <div id="suggestions">
+                    <!-- Suggestions will be dynamically added here -->
+                </div>
+            </section>
+        </br>
         </div>
             <div class="download-options">
                 <button onclick="downloadAsPDF()">Download as PDF</button>
@@ -202,7 +225,7 @@
         </main>
         <footer>
             <nav>
-                <a href="home.html">&RightArrow;Home</a>
+                <a href="home.html">&RightArrow; Home</a>
                 <a href="contact.html">&RightArrow; Contact us</a>
             </nav>
         </footer>
@@ -214,11 +237,13 @@
             event.preventDefault();
 
             let date = document.getElementById("date").value;
-            let category = document.getElementById("category").value;
             let amount = parseFloat(document.getElementById("amount").value);
-            let description = document.getElementById("description").value;
             let type = document.getElementById("type").value;
 
+            if (!type || !date || !amount) {
+                console.error("One or more input fields are missing!");
+                return;
+            }
 
             if (isNaN(amount)) return;
 
@@ -227,6 +252,9 @@
                 totalIncome += amount;
             } else if (type === "expense") {
                 // Add expense to the table
+                let category = document.getElementById("category").value;
+                let description = document.getElementById("description").value;
+
                 let tableBody = document.getElementById("expense-body");
                 let newRow = tableBody.insertRow();
 
@@ -259,32 +287,28 @@
                 cellAction.appendChild(editButton);
                 cellAction.appendChild(deleteButton);
             }
+            else{
+                
+            }
 
             updateTotals(); // Update totals after adding a new entry
             document.getElementById("expenseForm").reset();
         });
 
+        function toggleFields() {
+            let type = document.getElementById("type").value;
+            let expenseFields = document.getElementById("expenseFields");
+
+            if (type === "income") {
+                expenseFields.style.display = "none"; // Hide category and description fields
+            } else {
+                expenseFields.style.display = "block"; // Show category and description fields
+            }
+        }
+
         function deleteExpense(row) {
             row.remove();
             updateTotals();
-        }
-
-        function toggleFields() {
-            let type = document.getElementById("type").value;
-            let categoryField = document.getElementById("category");
-            let descriptionField = document.getElementById("description");
-
-            if (type === "income") {
-                categoryField.style.display = "none";
-                descriptionField.style.display = "none";
-                categoryField.removeAttribute("required");
-                descriptionField.removeAttribute("required");
-            } else {
-                categoryField.style.display = "block";
-                descriptionField.style.display = "block";
-                categoryField.setAttribute("required", "true");
-                descriptionField.setAttribute("required", "true");
-            }
         }
 
         function editExpense(row) {
@@ -318,6 +342,76 @@
             document.getElementById("total-balance").textContent = (totalIncome - totalExpenses).toFixed(2);
         }
 
+        function analyzeExpenses() {
+            let totalIncome = parseFloat(document.getElementById("total-income").textContent);
+            let totalExpenses = parseFloat(document.getElementById("total-expenses").textContent);
+            let balance = parseFloat(document.getElementById("total-balance").textContent);
+
+            let suggestions = [];
+
+            // Check if expenses exceed income
+            if (totalExpenses > totalIncome) {
+                suggestions.push("⚠️ Your expenses exceed your income. Consider reducing unnecessary spending.");
+            }
+        
+            // Check if balance is low
+            if (balance < 0) {
+                suggestions.push("⚠️ You have a negative balance. Avoid further expenses until your income increases.");
+            }
+        
+            // Analyze spending categories
+            let categorySpending = {};
+            document.querySelectorAll("#expense-body tr").forEach(row => {
+                let category = row.cells[1].textContent;
+                let amount = parseFloat(row.cells[3].textContent);
+            
+                if (categorySpending[category]) {
+                    categorySpending[category] += amount;
+                } else {
+                    categorySpending[category] = amount;
+                }
+            });
+        
+            // Suggest reducing spending in high-cost categories
+            for (let category in categorySpending) {
+                if (categorySpending[category] > (totalIncome * 0.3)) { // If spending > 30% of income
+                    suggestions.push(`💡 You're spending a lot on ${category}. Consider reducing expenses in this category.`);
+                }
+            }
+        
+            // Suggest setting a budget
+            if (totalExpenses > 0) {
+                suggestions.push("💡 Set a monthly budget for each category to control your spending.");
+            }
+        
+            // Suggest increasing savings
+            if (balance > 0) {
+                suggestions.push("💡 Save at least 20% of your income for future needs.");
+            }
+        
+            // Display suggestions
+            let suggestionsDiv = document.getElementById("suggestions");
+            suggestionsDiv.innerHTML = suggestions.map(s => `<p>${s}</p>`).join("");
+        }
+
+        // Call analyzeExpenses after updating totals
+        function updateTotals() {
+            let totalExpenses = 0;
+        
+            // Calculate total expenses from the table
+            document.querySelectorAll("#expense-body tr").forEach(row => {
+                let amount = parseFloat(row.cells[3].textContent); // Amount is in the 4th cell (index 3)
+                totalExpenses += amount;
+            });
+        
+            // Update the totals in the table footer
+            document.getElementById("total-income").textContent = totalIncome.toFixed(2);
+            document.getElementById("total-expenses").textContent = totalExpenses.toFixed(2);
+            document.getElementById("total-balance").textContent = (totalIncome - totalExpenses).toFixed(2);
+        
+            // Analyze expenses and provide suggestions
+            analyzeExpenses();
+        }
         function downloadAsImage() {
             let tableContainer = document.getElementById("expenseTable");
             html2canvas(tableContainer).then(canvas => {
