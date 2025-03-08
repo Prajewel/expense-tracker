@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,13 +12,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <style>
-    body{
+    body {
         font-family: Arial, Helvetica, sans-serif;
         margin: 0;
         padding: 0;
         background-color: #f4f4f9;
     }
-    header{
+    header {
         background-color: teal;
         color: mintcream;
         font-size: 2.5rem;
@@ -25,13 +26,13 @@
         text-align: center;
         cursor: default;
     }
-    h1 a{
+    h1 a {
         margin: 10px 0;
     }
-    main{
+    main {
         padding: 20px;
     }
-    .add-expense{
+    .add-expense {
         background-color: white;
         padding: 20px;
         border-radius: 10px;
@@ -40,12 +41,11 @@
         max-width: 800px;
         text-align: left;
     }
-    .add-expense h2{
+    .add-expense h2 {
         text-align: center;
         cursor: default;
     }
-
-    .expense-list{
+    .expense-list {
         background-color: white;
         padding: 20px;
         border-radius: 10px;
@@ -55,53 +55,54 @@
         text-align: left;
         cursor: default;
     }
-    label{
+    label {
         font-weight: bold;
     }
-    input, select, button{
+    input, select, button {
         padding: 10px;
         border: 1px solid #ccc;
         margin: 10px;
         border-radius: 5px;
         font-size: 1em;
     }
-    button{
+    button {
         background-color: teal;
         color: white;
         border: none;
         cursor: pointer;
     }
-    button:hover{
+    button:hover {
         background-color: rgb(0, 185, 185);
     }
-    table{
+    table {
         width: 100%;
         border-collapse: collapse;
         margin-top: 20px;
+        padding: 20px ;
     }
-    th,td{
+    th, td {
         padding: 10px;
         border: 1px solid #ddd;
         text-align: left;
     }
-    th{
+    th {
         background-color: teal;
         color: white;
     }
-    .action button{
+    .action button {
         padding: 5px 10px;
         margin: 0 5px;
         font-size: 0.9em;
     }
-    #totalExpenses{
+    #totalExpenses {
         font-size: 1.2em;
         font-weight: bold;
         margin-top: 20px;
     }
-    a{
+    a {
         align-items: left;
     }
-    footer{
+    footer {
         background-color: teal;
         color: mintcream;
         margin-top: 20px;
@@ -112,7 +113,13 @@
         width: 100%;
     }
 
-    footer nav a{
+    .expense-list {
+        overflow-x: auto; /* Ensure the container takes full width */
+        margin: 0 auto; /* Center the container */
+        padding: 20px;
+    }
+
+    footer nav a {
         display: block;
         margin: 15px;
         text-align: left;
@@ -144,7 +151,12 @@
                 <input type="date" id="date" required><br>
                 <label for="description">Description: </label>
                 <input type="text" id="description" placeholder="Enter description"><br><br>
-                <button type="submit">Add Expense</button><br>
+                <select id="type" onchange="toggleFields()">
+                    <option value="">Select Type</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                </select>
+                <button type="submit">Add Entry</button><br>
             </form>
         </section>
 
@@ -158,18 +170,26 @@
                         <th>Category</th>
                         <th>Description</th>
                         <th>Amount</th>
-                    </div>
                         <th class="action-column">Action</th>
                     </tr>
                 </thead>
                 <tbody id="expense-body">
-
                 </tbody>
                 <tfoot>
-                    <tr class="total-row">
-                        <td colspan="3">Total Expenses: </td>
-                        <td id="total-amount">0</td>
-                        <td></td>
+                    <tr>
+                        <td colspan="3">Total Income</td>
+                        <td id="total-income">0</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3">Total Expenses</td>
+                        <td id="total-expenses">0</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr class="total-container">
+                        <td colspan="3">Balance Left</td>
+                        <td id="total-balance">0</td>
+                        <td colspan="2"></td>
                     </tr>
                 </tfoot>
             </table>
@@ -189,89 +209,121 @@
         </footer>
 
     <script>
-        document.getElementById("expenseForm").addEventListener("submit",function(event){
+        let totalIncome = 0; // Variable to store total income
+
+        document.getElementById("expenseForm").addEventListener("submit", function(event) {
             event.preventDefault();
-        
+
             let date = document.getElementById("date").value;
             let category = document.getElementById("category").value;
-            let amount = document.getElementById("amount").value;
+            let amount = parseFloat(document.getElementById("amount").value);
             let description = document.getElementById("description").value;
-             
-            if (!date || !category || !description || !amount) return;
-        
-            amount = parseFloat(amount).toFixed(2);
-        
+            let type = document.getElementById("type").value;
+
+            if (!type || !date || !amount) {
+                console.error("One or more input fields are missing!");
+                return;
+            }
+
             if (isNaN(amount)) return;
-        
-            let tableBody = document.getElementById("expense-body");
-            let newRow = tableBody.insertRow();
 
-            let cellDate = newRow.insertCell(0);
-            let cellCategory = newRow.insertCell(1);
-            let cellDescription = newRow.insertCell(2);
-            let cellAmount = newRow.insertCell(3);
-            let cellAction = newRow.insertCell(4);
+            if (type === "income") {
+                // Add to total income
+                totalIncome += amount;
+            } else if (type === "expense") {
+                // Add expense to the table
+                let tableBody = document.getElementById("expense-body");
+                let newRow = tableBody.insertRow();
 
-            cellDate.textContent = date;
-            cellCategory.textContent = category;
-            cellDescription.textContent = description;
-            cellAmount.textContent = amount;
-            cellAmount.classList.add("expense-amount");
+                let cellDate = newRow.insertCell(0);
+                let cellCategory = newRow.insertCell(1);
+                let cellDescription = newRow.insertCell(2);
+                let cellAmount = newRow.insertCell(3);
+                let cellAction = newRow.insertCell(4);
 
+                cellDate.textContent = date;
+                cellCategory.textContent = category;
+                cellDescription.textContent = description;
+                cellAmount.textContent = amount.toFixed(2);
+                cellAmount.classList.add("expense-amount");
 
-            let editButton = document.createElement("button");
-            editButton.textContent = "Edit";
-            editButton.classList.add("edit-btn");
-            editButton.onclick = function(){
-                editExpense(newRow);
-            };
+                let editButton = document.createElement("button");
+                editButton.textContent = "Edit";
+                editButton.classList.add("edit-btn");
+                editButton.onclick = function() {
+                    editExpense(newRow);
+                };
 
-            let deleteButton = document.createElement("button");
-            deleteButton.textContent = "Delete";
-            deleteButton.classList.add("de;ete-btn");
-            deleteButton.onclick = function(){
-                deleteExpense(newRow);
-            };
+                let deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.classList.add("delete-btn");
+                deleteButton.onclick = function() {
+                    deleteExpense(newRow);
+                };
 
-            cellAction.appendChild(editButton);
-            cellAction.appendChild(deleteButton);
+                cellAction.appendChild(editButton);
+                cellAction.appendChild(deleteButton);
+            }
 
-            updateTotal();
-        
+            updateTotals(); // Update totals after adding a new entry
             document.getElementById("expenseForm").reset();
         });
-    
-        function deleteExpense(row){
+
+        function deleteExpense(row) {
             row.remove();
-            updateTotal();
-        }
-    
-        function editExpense(row){
-            let cells = row.getElementsByTagName("td");
-            let date = prompt("Edit Date: ",cells[0].innerText);
-            let category = prompt("Edit Category: ",cells[1].innerText);
-            let description = prompt("Edit Description: ",cells[2].innerText);
-            let amount = prompt("Edit Amount: ",cells[3].innerText);
-        
-            if (date) cells[0].innerText = date;
-            if (category) cells[1].innerText = category;
-            if (description) cells[2].innerText =description;
-            if (amount && !isNaN(parseFloat(amount))) {
-                cells[3].textContent = parseFloat(amount).toFixed(2);
-                updateTotal();
-            }
-        }
-    
-        function updateTotal(){
-            let total = 0;
-            document.querySelectorAll(".expense-amount").forEach(cell => {
-                total += parseFloat(cell.innerText) || 0;
-            });
-        
-            document.getElementById("total-amount").innerText = total.toFixed(2);
+            updateTotals();
         }
 
-        function downloadAsImage(){
+        function toggleFields() {
+            let type = document.getElementById("type").value;
+            let categoryField = document.getElementById("category");
+            let descriptionField = document.getElementById("description");
+
+            if (type === "income") {
+                categoryField.style.display = "none";
+                descriptionField.style.display = "none";
+                categoryField.removeAttribute("required");
+                descriptionField.removeAttribute("required");
+            } else {
+                categoryField.style.display = "block";
+                descriptionField.style.display = "block";
+                categoryField.setAttribute("required", "true");
+                descriptionField.setAttribute("required", "true");
+            }
+        }
+
+        function editExpense(row) {
+            let cells = row.getElementsByTagName("td");
+            let date = prompt("Edit Date: ", cells[0].innerText);
+            let category = prompt("Edit Category: ", cells[1].innerText);
+            let description = prompt("Edit Description: ", cells[2].innerText);
+            let amount = prompt("Edit Amount: ", cells[3].innerText);
+
+            if (date) cells[0].innerText = date;
+            if (category) cells[1].innerText = category;
+            if (description) cells[2].innerText = description;
+            if (amount && !isNaN(parseFloat(amount))) {
+                cells[3].textContent = parseFloat(amount).toFixed(2);
+                updateTotals();
+            }
+        }
+
+        function updateTotals() {
+            let totalExpenses = 0;
+
+            // Calculate total expenses from the table
+            document.querySelectorAll("#expense-body tr").forEach(row => {
+                let amount = parseFloat(row.cells[3].textContent); // Amount is in the 4th cell (index 3)
+                totalExpenses += amount;
+            });
+
+            // Update the totals in the table footer
+            document.getElementById("total-income").textContent = totalIncome.toFixed(2);
+            document.getElementById("total-expenses").textContent = totalExpenses.toFixed(2);
+            document.getElementById("total-balance").textContent = (totalIncome - totalExpenses).toFixed(2);
+        }
+
+        function downloadAsImage() {
             let tableContainer = document.getElementById("expenseTable");
             html2canvas(tableContainer).then(canvas => {
                 let link = document.createElement("a");
@@ -281,16 +333,16 @@
             });
         }
 
-        function downloadAsPDF(){
+        function downloadAsPDF() {
             window.jsPDF = window.jspdf.jsPDF;
             let doc = new jsPDF();
 
             html2canvas(document.getElementById("expenseTable")).then(canvas => {
                 let imgData = canvas.toDataURL("image/png");
                 let imgWidth = 190;
-                let imgHeight = (canvas.height*imgWidth) / canvas.width;
-                
-                doc.addImage(imgData,"PNG",10,10,imgWidth,imgHeight);
+                let imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+                doc.addImage(imgData, "PNG", 10, 10, imgWidth, imgHeight);
                 doc.save("expense_table.pdf");
             });
         }
